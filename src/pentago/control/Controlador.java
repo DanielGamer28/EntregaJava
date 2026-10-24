@@ -93,14 +93,12 @@ public class Controlador{
 	 * @return true si cumple, false si no
 	 */
 	public boolean esLegalColocar(Coordenada coordenada) {
-		//Para que sea legal, tiene que estar en tablero y tiene que estar vacia la celda donde se va a colocar
-		//Nos aprovechamos de las funciones que ya tenemos creadas en otras clases (como se pide, obviamente solo q yo soy imbecil)
-		
-		if(this.tablero.estaEnTablero(coordenada) && this.tablero.consultarCelda(coordenada).estaVacia()) {
-			return true;
-		}else {
-			return false;
-		}
+	boolean esLegal = false;
+	if (!this.estaAcabado() && this.tablero.estaEnTablero(coordenada) 
+			&& this.tablero.consultarCelda(coordenada).estaVacia()) {
+		esLegal = true;
+	}
+	return esLegal;
 	}
 	
 	/**
@@ -179,54 +177,32 @@ public class Controlador{
 	 * @return true si cumple, false si no
 	 */
 	public boolean estaAcabado() {
-		if(this.tablero.estaCompleto()) { 
-			//La intencion es comprobar si jug1 y jug2 tienen minimo n fichas de cada color seguidas
-			
-			//this.tablero.consultarNumeroPiezas(jugador[0].consultarColor()) == tablero.) {
-			
-			
-			
-			return false;
-		}
-		return true;
-		
-		
+	boolean acabado = false;
+	
+	if (this.tablero.estaCompleto()) {
+		acabado = true;
+	} else if (alcanzaVictoria(Color.BLANCO) || alcanzaVictoria(Color.NEGRO)) {
+		acabado = true;
+	}
+	
+	return acabado;
 	}
 	
 	
-	/**
-	 * Rota la region EN SENTIDO HORARIO acotada en el cuadrante dado
-	 * 
-	 * @param cuadrante
-	 */
 	public void rotarRegionSentidoHorario(Cuadrante cuadrante) {
-		
-	Coordenada cordCuadrante = this.configuracion.consultarCoordenadaReferencia(cuadrante);
-	int tam = configuracion.consultarTamañoCuadrante();
-	//Con esto ahora vamos a obtener una region, que al ser cuadrada, solo necesitamos el tamaño del cuadrante
-	Region reg = tablero.consultarRegion(cordCuadrante, tam, tam);
-	
-	Region regRotada = reg.rotarSentidoHorario();
-	//Y ahora volvemos a poner todas las piezas que tiene la region Rotada en el tablero, partiendo de la coord del cuadrante
-	tablero.restaurarPiezas(cordCuadrante, regRotada);
+	Coordenada esquina = this.configuracion.consultarCoordenadaReferencia(cuadrante);
+	int tam = this.configuracion.consultarTamañoCuadrante();
+	Region regionOriginal = this.tablero.consultarRegion(esquina, tam, tam);
+	Region regionRotada = regionOriginal.rotarSentidoHorario();
+	this.tablero.restaurarPiezas(esquina, regionRotada);
 	}
-	
-	
-	/**
-	 * Rota la region EN SENTIDO ANTI-HORARIO acotada en el cuadrante dado
-	 * 
-	 * @param cuadrante
-	 */
+
 	public void rotarRegionSentidoAntihorario(Cuadrante cuadrante) {
-		
-	Coordenada cordCuadrante = this.configuracion.consultarCoordenadaReferencia(cuadrante);
-	int tam = configuracion.consultarTamañoCuadrante();
-	//Con esto ahora vamos a obtener una region, que al ser cuadrada, solo necesitamos el tamaño del cuadrante
-	Region reg = tablero.consultarRegion(cordCuadrante, tam, tam);
-	
-	Region regRotada = reg.rotarSentidoAntihorario();
-	//Y ahora volvemos a poner todas las piezas que tiene la region Rotada en el tablero, partiendo de la coord del cuadrante
-	tablero.restaurarPiezas(cordCuadrante, regRotada);
+	Coordenada esquina = this.configuracion.consultarCoordenadaReferencia(cuadrante);
+	int tam = this.configuracion.consultarTamañoCuadrante();
+	Region regionOriginal = this.tablero.consultarRegion(esquina, tam, tam);
+	Region regionRotada = regionOriginal.rotarSentidoAntihorario();
+	this.tablero.restaurarPiezas(esquina, regionRotada);
 	}
 	
 }
