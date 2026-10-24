@@ -1,208 +1,225 @@
 package pentago.control;
 
-import pentago.modelo.Tablero;
+import pentago.modelo.Celda;
+import pentago.modelo.Color;
 import pentago.modelo.Jugador;
 import pentago.modelo.Region;
-import pentago.modelo.Color;
-import pentago.modelo.Pieza;
-import pentago.modelo.Celda;
-
+import pentago.modelo.Tablero;
 import pentago.util.Coordenada;
 import pentago.util.Direccion;
 
-public class Controlador{
-	
+/**
+ * Gestiona el desarrollo de la partida de Pentago, coordinando el tablero,
+ * la configuración, los jugadores y los turnos.
+ * 
+ * @author Daniel Acitores Martinez 
+ * @author Claudia Berezo Berzosa
+ * 
+ */
+public class Controlador {
+
+	/** Tablero de la partida. */
 	private Tablero tablero;
+
+	/** Índice del jugador que tiene el turno actual (0 o 1). */
 	private int turno;
+
+	/** Configuración de la partida. */
 	private Configuracion configuracion;
-	
-	private Jugador jugador[];
-	
-	//Constructor
+
+	/** Array con los dos jugadores de la partida. */
+	private Jugador[] jugador;
+
+	/**
+	 * Inicializa el controlador con un tablero y su configuración correspondiente.
+	 * 
+	 * @param tablero tablero de juego
+	 * @param configuracion configuración de la partida
+	 */
 	public Controlador(Tablero tablero, Configuracion configuracion) {
 		this.tablero = tablero;
-		this.configuracion = configuracion;	
-		this.turno = 0; //Arrancan las fichas blancas con jugador[0]
-		
-		this.jugador = new Jugador[2]; //De esta forma, se instancian 2 jugadores (creo q tamb se puede con jug1 y jug2, pero soy gilipollas y ns)
+		this.configuracion = configuracion;
+		this.turno = 0;
+		this.jugador = new Jugador[2];
 	}
-	
+
 	/**
-	 * Funcion para saber la config actual
+	 * Consulta la configuración actual de la partida.
 	 * 
-	 * @return configuracion
+	 * @return configuración actual
 	 */
 	public Configuracion consultarConfiguracion() {
 		return this.configuracion;
 	}
-	
+
 	/**
-	 * Funcion de consulta sobre el tablero actual
+	 * Consulta una copia en profundidad del tablero actual.
 	 * 
-	 * @return tablero
+	 * @return clon del tablero actual
 	 */
 	public Tablero consultarTablero() {
 		return this.tablero.clonar();
 	}
-	
+
 	/**
-	 * Inicializamos al jugador con su nombre y color correspondiente (blanco para 1, negro para 2)
+	 * Registra a un jugador con su nombre y su color correspondiente
+	 * (blanco para el primer jugador, negro para el segundo).
 	 * 
-	 * @param nombre
+	 * @param nombre nombre del jugador a registrar
 	 */
 	public void registrarJugador(String nombre) {
-		if(this.jugador[0] == null) {	//como solo hemos guardado el espacio en memoria para 2 jugadores, ahora les instanciamos	
-			jugador[0] = new Jugador(nombre, Color.BLANCO );
-		}else {
-			jugador[1] = new Jugador(nombre, Color.NEGRO );
+		if (this.jugador[0] == null) {
+			this.jugador[0] = new Jugador(nombre, Color.BLANCO);
+		} else if (this.jugador[1] == null) {
+			this.jugador[1] = new Jugador(nombre, Color.NEGRO);
 		}
 	}
-	
-	
+
 	/**
-	 * Funcion que devueve al jugador actual con el turno
+	 * Obtiene el jugador que tiene el turno actual.
 	 * 
-	 * @return jugador con turno
+	 * @return jugador con el turno
 	 */
 	public Jugador obtenerTurno() {
-		if(turno == 0) {
-			return jugador[0];
-		}else {
-			return jugador[1];
+		Jugador jugadorActual = null;
+		if (this.turno == 0) {
+			jugadorActual = this.jugador[0];
+		} else {
+			jugadorActual = this.jugador[1];
 		}
-		/*
-		 * return jugador[turno]; hace lo mismo, pero soy cortito, si lo hago de la otra forma lo veo mejor
-		 */
+		return jugadorActual;
 	}
-	
+
 	/**
-	 * Cambia el turno del jugador actual al otro jugador
+	 * Cambia el turno del jugador actual al otro jugador.
 	 */
 	public void cambiarTurno() {
-		if(turno == 1) {
-			turno = 0;
-		}else {
-			turno = 1;
+		if (this.turno == 1) {
+			this.turno = 0;
+		} else {
+			this.turno = 1;
 		}
 	}
-	
+
 	/**
-	 *Comprobacion para saber si se puede colocar una pieza en las coordenadas dadas 
+	 * Comprueba si es legal colocar una pieza en la coordenada dada.
 	 * 
-	 * @param coordenada
-	 * @return true si cumple, false si no
+	 * @param coordenada coordenada donde se pretende colocar la pieza
+	 * @return true si es legal colocar, false en caso contrario
 	 */
 	public boolean esLegalColocar(Coordenada coordenada) {
-	boolean esLegal = false;
-	if (!this.estaAcabado() && this.tablero.estaEnTablero(coordenada) 
-			&& this.tablero.consultarCelda(coordenada).estaVacia()) {
-		esLegal = true;
+		boolean esLegal = false;
+		if (!this.estaAcabado() && this.tablero.estaEnTablero(coordenada)
+				&& this.tablero.consultarCelda(coordenada).estaVacia()) {
+			esLegal = true;
+		}
+		return esLegal;
 	}
-	return esLegal;
-	}
-	
+
 	/**
-	 * Funcion que colocara la pieza si es posible correspondiente al jugador con turno, si no, no hara nada
+	 * Coloca una pieza del jugador con el turno actual en la coordenada indicada.
 	 * 
-	 * @param coordenada
+	 * @param coordenada coordenada donde colocar la pieza
 	 */
 	public void colocarPieza(Coordenada coordenada) {
-		//De esta forma, colocamos una pieza del color correspondiente al jugador en su turno, en la coordenada dicha
-		//Ni puta idea como se me ha ocurrido con mi cabeza de alcornoque
-		
-		this.tablero.colocar(new Pieza(jugador[turno].consultarColor()), coordenada);
-		//tablero.colocar(jugador[turno].generarPieza(), coordenada);
-		//Tambien seria otra forma mejor (para q coño habre dicho nd antes, soy imbecil)
+		this.tablero.colocar(this.jugador[this.turno].generarPieza(), coordenada);
 	}
-	
-	
+
 	/**
-	 * Retorna la instancia del tablero contenida en el controlador
+	 * Obtiene la instancia del tablero contenida en el controlador.
 	 * 
-	 * @return tablero actual
+	 * @return referencia al tablero actual
 	 */
 	Tablero obtenerTablero() {
 		return this.tablero;
 	}
-	
-	
+
 	/**
 	 * Comprueba si el color dado ya tiene una línea ganadora en el tablero.
 	 *
 	 * @param color color a comprobar
-	 * @return true si ese color alcanza el mínimo de piezas consecutivas en algún punto
+	 * @return true si ese color alcanza el mínimo de piezas consecutivas
 	 */
 	private boolean tienePiezasGanadoras(Color color) {
-	    boolean encontrado = false;
+		boolean encontrado = false;
 
-	    for (int i = 0; i < tablero.consultarNumeroFilas(); i++) {
-	        for (int j = 0; j < tablero.consultarNumeroColumnas(); j++) {
-	            Coordenada coordenada = new Coordenada(i, j);
-	            Celda celda = tablero.consultarCelda(coordenada);
+		for (int i = 0; i < this.tablero.consultarNumeroFilas(); i++) {
+			for (int j = 0; j < this.tablero.consultarNumeroColumnas(); j++) {
+				Coordenada coordenada = new Coordenada(i, j);
+				Celda celda = this.tablero.consultarCelda(coordenada);
 
-	            if (!celda.estaVacia() && celda.consultarPieza().color() == color) {
-	                for (Direccion direccion : Direccion.values()) {
-	                    int consecutivas = tablero.contarPiezasConsecutivas(coordenada, direccion);
-	                    encontrado = encontrado || consecutivas >= configuracion.numeroPiezasConsecutivas();
-	                }
-	            }
-	        }
-	    }
-	    return encontrado;
+				if (!celda.estaVacia() && celda.consultarPieza().color() == color) {
+					for (Direccion direccion : Direccion.values()) {
+						int consecutivas = this.tablero.contarPiezasConsecutivas(coordenada, direccion);
+						if (consecutivas >= this.configuracion.numeroPiezasConsecutivas()) {
+							encontrado = true;
+						}
+					}
+				}
+			}
+		}
+		return encontrado;
 	}
-	
-	
+
 	/**
 	 * Obtiene el jugador que ha ganado la partida, si lo hay.
 	 *
-	 * @return jugador ganador, o null si no hay
+	 * @return jugador ganador, o null si no hay ganador o hay empate
 	 */
 	public Jugador obtenerGanador() {
-	    boolean blancoGana = tienePiezasGanadoras(Color.BLANCO);
-	    boolean negroGana = tienePiezasGanadoras(Color.NEGRO);
+		boolean blancoGana = this.tienePiezasGanadoras(Color.BLANCO);
+		boolean negroGana = this.tienePiezasGanadoras(Color.NEGRO);
 
-	    Jugador ganador = null;
-	    if (blancoGana && !negroGana) {
-	        ganador = jugador[0];
-	    } else if (negroGana && !blancoGana) {
-	        ganador = jugador[1];
-	    }
-	    return ganador;
+		Jugador ganador = null;
+		if (blancoGana && !negroGana) {
+			ganador = this.jugador[0];
+		} else if (negroGana && !blancoGana) {
+			ganador = this.jugador[1];
+		}
+		return ganador;
 	}
-	
-	
+
 	/**
-	 * Comprueba si se cumplen las condiciones para que el juego se de por finalizado
+	 * Comprueba si se cumplen las condiciones de finalización de la partida.
 	 * 
-	 * @return true si cumple, false si no
+	 * @return true si la partida ha finalizado, false en caso contrario
 	 */
 	public boolean estaAcabado() {
-	boolean acabado = false;
-	
-	if (this.tablero.estaCompleto()) {
-		acabado = true;
-	} else if (alcanzaVictoria(Color.BLANCO) || alcanzaVictoria(Color.NEGRO)) {
-		acabado = true;
-	}
-	
-	return acabado;
-	}
-	
-	
-	public void rotarRegionSentidoHorario(Cuadrante cuadrante) {
-	Coordenada esquina = this.configuracion.consultarCoordenadaReferencia(cuadrante);
-	int tam = this.configuracion.consultarTamañoCuadrante();
-	Region regionOriginal = this.tablero.consultarRegion(esquina, tam, tam);
-	Region regionRotada = regionOriginal.rotarSentidoHorario();
-	this.tablero.restaurarPiezas(esquina, regionRotada);
+		boolean acabado = false;
+
+		if (this.tablero.estaCompleto()) {
+			acabado = true;
+		} else if (this.tienePiezasGanadoras(Color.BLANCO) || this.tienePiezasGanadoras(Color.NEGRO)) {
+			acabado = true;
+		}
+
+		return acabado;
 	}
 
-	public void rotarRegionSentidoAntihorario(Cuadrante cuadrante) {
-	Coordenada esquina = this.configuracion.consultarCoordenadaReferencia(cuadrante);
-	int tam = this.configuracion.consultarTamañoCuadrante();
-	Region regionOriginal = this.tablero.consultarRegion(esquina, tam, tam);
-	Region regionRotada = regionOriginal.rotarSentidoAntihorario();
-	this.tablero.restaurarPiezas(esquina, regionRotada);
+	/**
+	 * Rota el cuadrante indicado 90 grados en sentido horario.
+	 * 
+	 * @param cuadrante cuadrante del tablero a rotar
+	 */
+	public void rotarRegionSentidoHorario(Cuadrante cuadrante) {
+		Coordenada esquina = this.configuracion.consultarCoordenadaReferencia(cuadrante);
+		int tam = this.configuracion.consultarTamañoCuadrante();
+		Region regionOriginal = this.tablero.consultarRegion(esquina, tam, tam);
+		Region regionRotada = regionOriginal.rotarSentidoHorario();
+		this.tablero.restaurarPiezas(esquina, regionRotada);
 	}
-	
+
+	/**
+	 * Rota el cuadrante indicado 90 grados en sentido antihorario.
+	 * 
+	 * @param cuadrante cuadrante del tablero a rotar
+	 */
+	public void rotarRegionSentidoAntihorario(Cuadrante cuadrante) {
+		Coordenada esquina = this.configuracion.consultarCoordenadaReferencia(cuadrante);
+		int tam = this.configuracion.consultarTamañoCuadrante();
+		Region regionOriginal = this.tablero.consultarRegion(esquina, tam, tam);
+		Region regionRotada = regionOriginal.rotarSentidoAntihorario();
+		this.tablero.restaurarPiezas(esquina, regionRotada);
+	}
+
 }
