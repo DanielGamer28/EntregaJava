@@ -6,304 +6,309 @@ import java.util.Objects;
 import pentago.util.Coordenada;
 import pentago.util.Direccion;
 
-/*
- * Autores: Daniel Acitores Martinez y Claudia Berezo Berzosa
+/**
+ * Representa un tablero bidimensional de celdas para el juego Pentago.
+ * 
+ * @author Daniel Acitores Martinez
+ * @author Claudia Berezo Berzosa
+ * 
  */
+public class Tablero {
 
-public class Tablero{
-	
+	/** Número de filas del tablero. */
 	private int filas;
-	private int columnas;
-	private Celda celda[][];//Dimensiones del tablero?
-	
-	//Constructor
-	public Tablero(int filas, int columnas){
-		this.filas = filas;
-		this.columnas = columnas;
-		
-		if(filas < 1 || columnas < 1) {
-			this.filas = filas;
-			this.columnas = columnas;
-		}	
-		
-		this.celda = new Celda[this.filas][this.columnas];
-		for(int i = 0; i < this.filas; i++) {
-			for(int j = 0; j < this.columnas; j++) {
-				celda[i][j] = new Celda(new Coordenada(i,j));
-			}
-		}
-					//Guardamos memoria para que se permitan X-Y celdas
-					//Ahora vamos a cada hueco, y creamos la celda VACIA
-		
-	}
 
+	/** Número de columnas del tablero. */
+	private int columnas;
+
+	/** Matriz bidimensional de celdas que componen el tablero. */
+	private Celda[][] celda;
 
 	/**
-	 * Devuelve una represantacion actual del tablero
+	 * Construye un tablero rectangular de celdas vacías.
+	 * Si el valor de filas o columnas es menor de 1, se acota a un mínimo de 1.
 	 * 
-	 * @return texto
+	 * @param filas número de filas del tablero
+	 * @param columnas número de columnas del tablero
+	 */
+	public Tablero(int filas, int columnas) {
+		this.filas = filas;
+		this.columnas = columnas;
+
+		if (filas < 1) {
+			this.filas = 1;
+		}
+		if (columnas < 1) {
+			this.columnas = 1;
+		}
+
+		this.celda = new Celda[this.filas][this.columnas];
+		for (int i = 0; i < this.filas; i++) {
+			for (int j = 0; j < this.columnas; j++) {
+				this.celda[i][j] = new Celda(new Coordenada(i, j));
+			}
+		}
+	}
+
+	/**
+	 * Genera una representación textual del tablero con caracteres 'X', 'O'
+	 * y '-' para celdas vacías.
+	 * 
+	 * @return cadena de texto con el estado actual del tablero
 	 */
 	public String aTexto() {
-		
 		String texto = "";
-			
-		for(int i = 0; i < consultarNumeroFilas(); i++) {
-			texto = texto + "\n";
-			for(int j = 0; j < consultarNumeroColumnas(); j++) {
-				if(this.celda[i][j].estaVacia()) {
+
+		for (int i = 0; i < this.consultarNumeroFilas(); i++) {
+			for (int j = 0; j < this.consultarNumeroColumnas(); j++) {
+				if (this.celda[i][j].estaVacia()) {
 					texto = texto + "-";
-				}else {
+				} else {
 					char c = this.celda[i][j].consultarPieza().color().aCaracter();
 					texto = texto + c;
 				}
+			}
+			if (i < this.consultarNumeroFilas() - 1) {
+				texto = texto + "\n";
 			}
 		}
 		return texto;
 	}
 
-
 	/**
-	 * Coloca la pieza en la posicion indicada si es posible
+	 * Coloca una pieza en la celda correspondiente a la coordenada indicada,
+	 * siempre que la coordenada esté dentro del tablero y la pieza no sea nula.
 	 * 
-	 * @param pieza
-	 * @param coordenada
+	 * @param pieza pieza a colocar en el tablero
+	 * @param coordenada coordenada de la celda destino
 	 */
 	public void colocar(Pieza pieza, Coordenada coordenada) {
-		if(estaEnTablero(coordenada)) {
+		if (pieza != null && coordenada != null && this.estaEnTablero(coordenada)) {
 			this.celda[coordenada.fila()][coordenada.columna()].establecerPieza(pieza);
 		}
 	}
 
-
 	/**
-	 * Comprueba los contenidos de la celda en esas coords
+	 * Consulta una copia en profundidad de la celda situada en la coordenada dada.
 	 * 
-	 * @param coordenada
-	 * @return celda
+	 * @param coordenada coordenada de la celda a consultar
+	 * @return clon de la celda consultada, o null si está fuera del tablero
 	 */
 	public Celda consultarCelda(Coordenada coordenada) {
-		
-		Celda celdaAux = new Celda(coordenada);
-		if(!this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) {
-			celdaAux.establecerPieza(this.celda[coordenada.fila()][coordenada.columna()].consultarPieza());
+		Celda celdaAux = null;
+		if (coordenada != null && this.estaEnTablero(coordenada)) {
+			celdaAux = new Celda(coordenada);
+			if (!this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) {
+				celdaAux.establecerPieza(this.celda[coordenada.fila()][coordenada.columna()].consultarPieza());
+			}
 		}
-		
 		return celdaAux;
 	}
 
-
 	/**
-	 * Devuelve el numero de columnas del tablero
+	 * Consulta el número de columnas del tablero.
 	 * 
-	 * @return columnas
+	 * @return número de columnas
 	 */
 	public int consultarNumeroColumnas() {
 		return this.columnas;
 	}
 
-
 	/**
-	 * Devuelve el numero de filas del tablero
+	 * Consulta el número de filas del tablero.
 	 * 
-	 * @return filas
+	 * @return número de filas
 	 */
 	public int consultarNumeroFilas() {
 		return this.filas;
 	}
-	
-	
+
 	/**
-	 * Cuenta la cantidad de piezas del color indicado
+	 * Cuenta el número total de piezas en el tablero que tienen el color indicado.
 	 * 
-	 * @param color
-	 * @return nº de piezas de ese color
+	 * @param color color de las piezas a contar
+	 * @return número de piezas de dicho color en el tablero
 	 */
 	public int consultarNumeroPiezas(Color color) {
-		
 		int total = 0;
-		
-		for(int i = 0; i < consultarNumeroFilas(); i++) {
-			for(int j = 0; j < consultarNumeroColumnas(); j++) {
-				if(!this.celda[i][j].estaVacia()) { //primero miramos a ver si hay alguna alguna pieza en la celda
-					if(this.celda[i][j].consultarPieza().color().equals(color)) { //se supone que si son iguales, sumaremos 1 al contador de las piezas de ese color
+
+		for (int i = 0; i < this.consultarNumeroFilas(); i++) {
+			for (int j = 0; j < this.consultarNumeroColumnas(); j++) {
+				if (!this.celda[i][j].estaVacia()) {
+					if (this.celda[i][j].consultarPieza().color() == color) {
 						total++;
 					}
 				}
 			}
 		}
-		
 		return total;
 	}
 
-
 	/**
-	 * Devuelve la region indicada con los parametros, y en ella todos los contenidos de las celdas
+	 * Genera una nueva región copiando el contenido de una porción del tablero
+	 * desde la esquina superior izquierda indicada.
 	 * 
-	 * @param esquinaSuperiorIzquierda
-	 * @param tamañoFilas
-	 * @param tamañoColumnas
-	 * @return region acotada y sus contenidos
+	 * @param esquinaSuperiorIzquierda coordenada de referencia de inicio
+	 * @param tamañoFilas número de filas de la región a extraer
+	 * @param tamañoColumnas número de columnas de la región a extraer
+	 * @return nueva región con la copia de las celdas correspondientes
 	 */
 	public Region consultarRegion(Coordenada esquinaSuperiorIzquierda, int tamañoFilas, int tamañoColumnas) {
-		
-		Celda[][] celdaAux  = new Celda[tamañoFilas][tamañoColumnas];
-		
-		for(int i = 0; i < tamañoFilas; i++) {
-			for(int j = 0; j < tamañoColumnas; j++) {
-				int fila = i+esquinaSuperiorIzquierda.fila();
-				int columna = j+esquinaSuperiorIzquierda.columna();
-				celdaAux[i][j] = new Celda(new Coordenada(fila, columna));
-				if(!this.celda[fila][columna].estaVacia()) {
+		Celda[][] celdaAux = new Celda[tamañoFilas][tamañoColumnas];
+
+		for (int i = 0; i < tamañoFilas; i++) {
+			for (int j = 0; j < tamañoColumnas; j++) {
+				int fila = i + esquinaSuperiorIzquierda.fila();
+				int columna = j + esquinaSuperiorIzquierda.columna();
+				celdaAux[i][j] = new Celda(new Coordenada(i, j));
+				if (this.estaEnTablero(new Coordenada(fila, columna)) && !this.celda[fila][columna].estaVacia()) {
 					celdaAux[i][j].establecerPieza(this.celda[fila][columna].consultarPieza());
 				}
 			}
 		}
-		
-		Region regionAux = new Region(celdaAux); //De esta forma creamos la region con la celda ya creada
-		
-		return regionAux;
+		return new Region(celdaAux);
 	}
 
-
 	/**
-	 * Comprueba la cantidad de piezas iguales a la indicada en dicha direccion
+	 * Cuenta el número de piezas consecutivas del mismo color que la pieza situada
+	 * en la coordenada dada, evaluando ambos sentidos de la dirección indicada.
 	 * 
-	 * @param coordenada
-	 * @param dir
-	 * @return total de piezas iguales en la direccion
+	 * @param coordenada coordenada de partida
+	 * @param dir dirección en la que se cuentan las piezas consecutivas
+	 * @return número de piezas consecutivas del mismo color
 	 */
 	public int contarPiezasConsecutivas(Coordenada coordenada, Direccion dir) {
-		
 		int total = 0;
-		if(!this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) {
-			total++; //Ahora si, sabemos si en la celda en la que entramos tiene ficha o no
+
+		if (coordenada != null && dir != null && this.estaEnTablero(coordenada)
+				&& !this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) {
+			total = 1;
+			Color colorBuscado = this.celda[coordenada.fila()][coordenada.columna()].consultarPieza().color();
+			total += this.contarEnSentido(coordenada, dir.consultarDesplazamientoEnFilas(),
+					dir.consultarDesplazamientoEnColumnas(), colorBuscado);
+			total += this.contarEnSentido(coordenada, -dir.consultarDesplazamientoEnFilas(),
+					-dir.consultarDesplazamientoEnColumnas(), colorBuscado);
 		}
-		
-		int n1 = 1; //Va a servir para poder desplazarnos por el tablero tras cada bucle
-		int n2 = 1;
-		char color = this.celda[coordenada.fila()][coordenada.columna()].consultarPieza().color().aCaracter();
-		
-		int x1 = (coordenada.fila()+(dir.consultarDesplazamientoEnFilas()*n1));
-		int y1 = (coordenada.columna()+(dir.consultarDesplazamientoEnColumnas()*n1));
-		
-		int x2 = (coordenada.fila()-(dir.consultarDesplazamientoEnFilas()*n2));
-		int y2 = (coordenada.columna()-(dir.consultarDesplazamientoEnColumnas()*n2));
-		
-		while (estaEnTablero(new Coordenada(x1,y1))) {
-			if(!this.celda[x1][y1].estaVacia() && (this.celda[x1][y1].consultarPieza().color().aCaracter() == color)) {
-				total++;	
-			}
-			n1++;
-			x1 = (coordenada.fila()+(dir.consultarDesplazamientoEnFilas()*n1));
-			y1 = (coordenada.columna()+(dir.consultarDesplazamientoEnColumnas()*n1));
-		}
-	
-		while (estaEnTablero(new Coordenada(x2,y2))) {
-			if(!this.celda[x2][y2].estaVacia() && (this.celda[x2][y2].consultarPieza().color().aCaracter() == color)) {
-				total++;	
-			}
-			n2++;
-			x2 = (coordenada.fila()-(dir.consultarDesplazamientoEnFilas()*n2));
-			y2 = (coordenada.columna()-(dir.consultarDesplazamientoEnColumnas()*n2));
-			
-		}		
-		//Y solo saldra cuando vea que las 2 posiciones siguientes NO ESTAN EN TABLERO	
 		return total;
 	}
 
-
 	/**
-	 * Devuelve la "legalidad" de la posicion indicada
+	 * Cuenta las piezas consecutivas de un mismo color avanzando en un sentido concreto.
 	 * 
-	 * @param coordenada
-	 * @return true si cumple, false si no
+	 * @param origen coordenada inicial desde la que se avanza
+	 * @param despFila desplazamiento vertical en cada paso
+	 * @param despCol desplazamiento horizontal en cada paso
+	 * @param color color de la pieza que se busca
+	 * @return cantidad de piezas consecutivas encontradas en ese sentido
 	 */
-	public boolean estaEnTablero(Coordenada coordenada) {
-		if(coordenada.fila() >= 0 && coordenada.columna() >= 0) {
-			if(coordenada.fila() < consultarNumeroFilas() && coordenada.columna() < consultarNumeroColumnas() ){
-				return true;
+	private int contarEnSentido(Coordenada origen, int despFila, int despCol, Color color) {
+		int contador = 0;
+		int filaActual = origen.fila() + despFila;
+		int colActual = origen.columna() + despCol;
+		boolean seguirContando = true;
+
+		while (this.estaEnTablero(new Coordenada(filaActual, colActual)) && seguirContando) {
+			Celda celdaActual = this.celda[filaActual][colActual];
+			if (!celdaActual.estaVacia() && celdaActual.consultarPieza().color() == color) {
+				contador++;
+				filaActual += despFila;
+				colActual += despCol;
+			} else {
+				seguirContando = false;
 			}
 		}
-		return false;
+		return contador;
 	}
-	
-	
+
 	/**
-	 * Devuelve si esta el tablero lleno
+	 * Comprueba si la coordenada dada se encuentra dentro de los límites del tablero.
 	 * 
-	 * @return true si cumple, false si no
+	 * @param coordenada coordenada a verificar
+	 * @return true si pertenece al tablero, false en caso contrario
+	 */
+	public boolean estaEnTablero(Coordenada coordenada) {
+		boolean dentro = false;
+		if (coordenada != null && coordenada.fila() >= 0 && coordenada.columna() >= 0) {
+			if (coordenada.fila() < this.consultarNumeroFilas()
+					&& coordenada.columna() < this.consultarNumeroColumnas()) {
+				dentro = true;
+			}
+		}
+		return dentro;
+	}
+
+	/**
+	 * Comprueba si todas las celdas del tablero contienen una pieza.
+	 * 
+	 * @return true si el tablero está lleno, false en caso contrario
 	 */
 	public boolean estaCompleto() {
-		
-		int total = consultarNumeroColumnas() * consultarNumeroFilas();
-		if(total == (consultarNumeroPiezas(Color.NEGRO)) + (consultarNumeroPiezas(Color.BLANCO))){
-			return true;
+		boolean completo = false;
+		int totalCeldas = this.consultarNumeroColumnas() * this.consultarNumeroFilas();
+		int totalPiezas = this.consultarNumeroPiezas(Color.NEGRO) + this.consultarNumeroPiezas(Color.BLANCO);
+
+		if (totalCeldas == totalPiezas) {
+			completo = true;
 		}
-		
-		return false;
+		return completo;
 	}
 
-
 	/**
-	 * Funcion que nos da la celda en las coordenadas dadas, si no tiene nada devuelve "null"
+	 * Obtiene la referencia directa a la celda situada en la coordenada indicada.
+	 * Si la coordenada no pertenece al tablero, retorna null.
 	 * 
-	 * @param coordenada
-	 * @return celda con sus contenidos
+	 * @param coordenada coordenada de la celda a obtener
+	 * @return referencia a la celda en el tablero, o null si está fuera de rango
 	 */
-	//Necesita ser amigable (para eso necesitamos que no tenga el "public" o "private" antes)
 	Celda obtenerCelda(Coordenada coordenada) {
-		if(!estaEnTablero(coordenada)) {
-			return null;
-		}else {
-			return this.celda[coordenada.fila()][coordenada.columna()];
+		Celda celdaObtenida = null;
+		if (this.estaEnTablero(coordenada)) {
+			celdaObtenida = this.celda[coordenada.fila()][coordenada.columna()];
 		}
+		return celdaObtenida;
 	}
-	
+
 	/**
-	 * Sobreescribe en el tablero actual las celdas de la region dada en las coordenadas
+	 * Vuelca sobre el tablero el contenido en piezas de la región recibida,
+	 * sobrescribiendo el contenido previo desde la esquina superior izquierda dada.
 	 * 
-	 * @param esquinaSuperiorIzquierda
-	 * @param region
+	 * @param esquinaSuperiorIzquierda coordenada del tablero donde coincide el (0,0) de la región
+	 * @param region región cuyas piezas se van a restaurar en el tablero
 	 */
-	public void restaurarPiezas(Coordenada esquinaSuperiorIzquierda, Region region){
-		if(estaEnTablero(esquinaSuperiorIzquierda)) {
-			for(int i = 0; i < region.consultarNumeroFilas(); i++) {
-				for(int j = 0; j < region.consultarNumeroColumnas(); j++) {
-					//Tenemos que calcular la posicion en la que nos vamos a posicionar ahora
-					
-					int fila = i+esquinaSuperiorIzquierda.fila();
-					int columna = j+esquinaSuperiorIzquierda.columna();
+	public void restaurarPiezas(Coordenada esquinaSuperiorIzquierda, Region region) {
+		if (esquinaSuperiorIzquierda != null && region != null && this.estaEnTablero(esquinaSuperiorIzquierda)) {
+			for (int i = 0; i < region.consultarNumeroFilas(); i++) {
+				for (int j = 0; j < region.consultarNumeroColumnas(); j++) {
+					int fila = i + esquinaSuperiorIzquierda.fila();
+					int columna = j + esquinaSuperiorIzquierda.columna();
 					Coordenada coordenadaReal = new Coordenada(fila, columna);
-					
-					//Y simplemente sacamos la pieza de la celda en la coordenada de los bucles, y la ponemos en las coordenadas de la region 
-					
-					colocar(region.consultarCelda(new Coordenada(i,j)).consultarPieza(), coordenadaReal);
+
+					if (this.estaEnTablero(coordenadaReal)) {
+						Pieza piezaRegion = region.consultarCelda(new Coordenada(i, j)).consultarPieza();
+						this.celda[fila][columna].establecerPieza(piezaRegion);
+					}
 				}
 			}
 		}
-		
 	}
 
-
 	/**
-	 * Funcion que devuelve una copia del tablero actual con sus celdas
+	 * Realiza una copia en profundidad del tablero actual.
 	 * 
-	 * @return tablero clonado
+	 * @return nuevo objeto tablero clonado
 	 */
 	public Tablero clonar() {
 		Tablero tableroAux = new Tablero(this.consultarNumeroFilas(), this.consultarNumeroColumnas());
-		for(int i = 0; i < consultarNumeroFilas(); i++) {
-			for(int j = 0; j < consultarNumeroColumnas(); j++) {
-				if(!this.celda[i][j].estaVacia()) {
+		for (int i = 0; i < this.consultarNumeroFilas(); i++) {
+			for (int j = 0; j < this.consultarNumeroColumnas(); j++) {
+				if (!this.celda[i][j].estaVacia()) {
 					tableroAux.celda[i][j].establecerPieza(this.celda[i][j].consultarPieza());
 				}
 			}
 		}
-		
 		return tableroAux;
 	}
 
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -312,7 +317,6 @@ public class Tablero{
 		result = prime * result + Objects.hash(columnas, filas);
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -326,9 +330,9 @@ public class Tablero{
 		return Arrays.deepEquals(celda, other.celda) && columnas == other.columnas && filas == other.filas;
 	}
 
-
 	@Override
 	public String toString() {
 		return "Tablero [filas=" + filas + ", columnas=" + columnas + ", celda=" + Arrays.toString(celda) + "]";
 	}
+
 }
