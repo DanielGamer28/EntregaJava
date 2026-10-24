@@ -264,12 +264,15 @@ public class Tablero{
 		if(estaEnTablero(esquinaSuperiorIzquierda)) {
 			for(int i = 0; i < region.consultarNumeroFilas(); i++) {
 				for(int j = 0; j < region.consultarNumeroColumnas(); j++) {
+					//Tenemos que calcular la posicion en la que nos vamos a posicionar ahora
 					
 					int fila = i+esquinaSuperiorIzquierda.fila();
 					int columna = j+esquinaSuperiorIzquierda.columna();
+					Coordenada coordenadaReal = new Coordenada(fila, columna);
 					
+					//Y simplemente sacamos la pieza de la celda en la coordenada de los bucles, y la ponemos en las coordenadas de la region 
 					
-					colocar();
+					colocar(region.consultarCelda(new Coordenada(i,j)).consultarPieza(), coordenadaReal);
 				}
 			}
 		}

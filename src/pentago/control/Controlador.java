@@ -2,9 +2,10 @@ package pentago.control;
 
 import pentago.modelo.Tablero;
 import pentago.modelo.Jugador;
-
+import pentago.modelo.Region;
 import pentago.modelo.Color;
 import pentago.modelo.Pieza;
+import pentago.modelo.Celda;
 
 import pentago.util.Coordenada;
 import pentago.util.Direccion;
@@ -117,7 +118,19 @@ public class Controlador{
 	}
 	
 	
+	/**
+	 * Retorna la instancia del tablero contenida en el controlador
+	 * 
+	 * @return tablero actual
+	 */
+	Tablero obtenerTablero() {
+		return this.tablero;
+	}
 	
+	/**
+	 * 
+	 * @return jugador ganador, false si no hay ninguno
+	 */
 	public Jugador obtenerGanador() {
 		
 		int n = 0;
@@ -129,20 +142,23 @@ public class Controlador{
 					if(tablero.consultarCelda(new Coordenada(i,j)).consultarPieza().color() == jugador[0].consultarColor()) {
 						int seguidas1 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_NO_SE);
 						if(seguidas1 == configuracion.numeroPiezasConsecutivas()) {
-							n = 0;
-						}
-						int seguidas2 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_SO_NE);
-						if(seguidas2 == configuracion.numeroPiezasConsecutivas()) {
-							n = 0;
-						}
-						int seguidas3 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.HORIZONTAL);
-						if(seguidas3 == configuracion.numeroPiezasConsecutivas()) {
-							n = 0;
-						}
-						int seguidas4 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.VERTICAL);
-						if(seguidas4 == configuracion.numeroPiezasConsecutivas()) {
-							n = 0;
-						}	
+							existeGanador = true;
+						}else {
+							int seguidas2 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_SO_NE);
+							if(seguidas2 == configuracion.numeroPiezasConsecutivas()) {
+								existeGanador = true;
+							}else {
+								int seguidas3 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.HORIZONTAL);
+								if(seguidas3 == configuracion.numeroPiezasConsecutivas()) {
+									existeGanador = true;
+								}else {
+									int seguidas4 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.VERTICAL);
+									if(seguidas4 == configuracion.numeroPiezasConsecutivas()) {
+										existeGanador = true;
+									}
+								}
+							}	
+						}							
 					}
 				}else {
 					/*Se puede poner lo siguiente, pero es "redundante" porque pasa al otro jugador por huevos
@@ -151,19 +167,26 @@ public class Controlador{
 					int seguidas1 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_NO_SE);
 					if(seguidas1 == configuracion.numeroPiezasConsecutivas()) {
 						n++;
-					}
-					int seguidas2 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_SO_NE);
-					if(seguidas2 == configuracion.numeroPiezasConsecutivas()) {
-						n++;
-					}
-					int seguidas3 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.HORIZONTAL);
-					if(seguidas3 == configuracion.numeroPiezasConsecutivas()) {
-						n++;
-					}
-					int seguidas4 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.VERTICAL);
-					if(seguidas4 == configuracion.numeroPiezasConsecutivas()) {
-						n++;						
-					}
+						existeGanador = true;
+					}else {
+						int seguidas2 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_SO_NE);
+						if(seguidas2 == configuracion.numeroPiezasConsecutivas()) {
+							n++;
+							existeGanador = true;
+						}else {
+							int seguidas3 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.HORIZONTAL);
+							if(seguidas3 == configuracion.numeroPiezasConsecutivas()) {
+								n++;
+								existeGanador = true;
+							}else {
+								int seguidas4 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.VERTICAL);
+								if(seguidas4 == configuracion.numeroPiezasConsecutivas()) {
+									n++;
+									existeGanador = true;						
+								}
+							}
+						}
+					}					
 				}
 			}
 		}
@@ -192,6 +215,17 @@ public class Controlador{
 			return false;
 		}
 		return true;
+		
+		
+	}
+	
+	
+	
+	public void rotarRegionSentidoHorario(Cuadrante cuadrante) {
+		tablero.
+	Coordenada cordCuadrante = this.configuracion.consultarCoordenadaReferencia(cuadrante);
+	Region reg = new Region(new Celda(cordCuadrante));
+	
 	}
 	
 	

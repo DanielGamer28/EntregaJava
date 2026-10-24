@@ -5,7 +5,8 @@ import java.util.Objects;
 /**
  * Identificación de un participante en el juego.
  * 
- * @author <a href="mailto:rmartico@ubu.es">Raúl Marticorena</a>
+ * @author <a href="mailto:cbb1013@alu.ubu.es">Claudia Berezo Berzosa</a>
+ * @author <a href="mailto:dam1012@alu.ubu.es">Daniel Acitores Martinez</a>
  * @version 1.0
  * @since 1.0
  */
