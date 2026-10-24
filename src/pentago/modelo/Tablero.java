@@ -184,23 +184,28 @@ public class Tablero{
 		char color = this.celda[coordenada.fila()][coordenada.columna()].consultarPieza().color().aCaracter();
 		
 		int x1 = (coordenada.fila()+(dir.consultarDesplazamientoEnFilas()*n1));
-		int x2 = (coordenada.fila()-(dir.consultarDesplazamientoEnFilas()*n2));
-		
 		int y1 = (coordenada.columna()+(dir.consultarDesplazamientoEnColumnas()*n1));
+		
+		int x2 = (coordenada.fila()-(dir.consultarDesplazamientoEnFilas()*n2));
 		int y2 = (coordenada.columna()-(dir.consultarDesplazamientoEnColumnas()*n2));
 		
 		while (estaEnTablero(new Coordenada(x1,y1))) {
-			if(this.celda[x1][y1].consultarPieza().color().aCaracter() == color) {
+			if(!this.celda[x1][y1].estaVacia() && (this.celda[x1][y1].consultarPieza().color().aCaracter() == color)) {
 				total++;	
 			}
 			n1++;
+			x1 = (coordenada.fila()+(dir.consultarDesplazamientoEnFilas()*n1));
+			y1 = (coordenada.columna()+(dir.consultarDesplazamientoEnColumnas()*n1));
 		}
 	
 		while (estaEnTablero(new Coordenada(x2,y2))) {
-			if(this.celda[x2][y2].consultarPieza().color().aCaracter() == color) {
+			if(!this.celda[x2][y2].estaVacia() && (this.celda[x2][y2].consultarPieza().color().aCaracter() == color)) {
 				total++;	
 			}
 			n2++;
+			x2 = (coordenada.fila()-(dir.consultarDesplazamientoEnFilas()*n2));
+			y2 = (coordenada.columna()-(dir.consultarDesplazamientoEnColumnas()*n2));
+			
 		}		
 		//Y solo saldra cuando vea que las 2 posiciones siguientes NO ESTAN EN TABLERO	
 		return total;
