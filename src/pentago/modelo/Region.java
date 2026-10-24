@@ -1,53 +1,70 @@
 package pentago.modelo;
+
 import java.util.Arrays;
 import java.util.Objects;
 
 import pentago.util.Coordenada;
 
-public class Region{
-	
-	//Variables que tendra region
+/**
+ * Representa una región rectangular de celdas extraída de un tablero,
+ * permitiendo aplicar rotaciones en sentido horario y antihorario.
+ * 
+ * @author Daniel Acitores Martinez
+ * @author Claudia Berezo Berzosa
+ * 
+ */
+public class Region {
+
+	/** Número de filas de la región. */
 	private int filas;
-	
+
+	/** Número de columnas de la región. */
 	private int columnas;
-	
+
+	/** Matriz bidimensional de celdas que componen la región. */
 	private Celda[][] celda;
-	
-	//constructor
-	
-	//Se hace esa comprobacion para meter por predefinido un 
-	public Region(int filas, int columnas) {		
+
+	/**
+	 * Construye una región rectangular de celdas vacías.
+	 * Si el valor de filas o columnas es menor de 1, se acota a un mínimo de 1.
+	 * 
+	 * @param filas número de filas de la región
+	 * @param columnas número de columnas de la región
+	 */
+	public Region(int filas, int columnas) {
 		this.filas = filas;
 		this.columnas = columnas;
-		
-		if(filas < 1) {
+
+		if (filas < 1) {
 			this.filas = 1;
 		}
-		if(columnas < 1) {
+		if (columnas < 1) {
 			this.columnas = 1;
 		}
-		
+
 		this.celda = new Celda[this.filas][this.columnas];
-		for(int i = 0; i < this.filas; i++) {
-			for(int j = 0; j < this.columnas; j++) {
-				celda[i][j] = new Celda(new Coordenada(i,j));
+		for (int i = 0; i < this.filas; i++) {
+			for (int j = 0; j < this.columnas; j++) {
+				this.celda[i][j] = new Celda(new Coordenada(i, j));
 			}
 		}
 	}
-	
-	//Constructor de las celdas en la region
+
+	/**
+	 * Construye una región a partir de una copia en profundidad de las piezas
+	 * contenidas en la matriz de celdas recibida.
+	 * 
+	 * @param celda matriz bidimensional de celdas origen
+	 */
 	public Region(Celda[][] celda) {
-		//Creamos una region que sea una COPIA de la celda pasada
-		//Una vez creada, ahora le vamos a hacer una copia de todo lo q tiene a lo que hay
-	    this.filas = celda.length;
-	    this.columnas = celda[0].length;
-	    this.celda = new Celda[this.filas][this.columnas];
-		
-		for(int i = 0; i < celda.length; i++) {
-			for(int j = 0; j < celda[0].length; j++) {
-				Celda celdaAux = new Celda(new Coordenada(i,j));
-				if(!celda[i][j].estaVacia()) {
-					//la que tiene la pieza es celda[i][j], Tenemos que sacarla, guardarla en una variable pieza y luego meterla en la aux?
+		this.filas = celda.length;
+		this.columnas = celda[0].length;
+		this.celda = new Celda[this.filas][this.columnas];
+
+		for (int i = 0; i < this.filas; i++) {
+			for (int j = 0; j < this.columnas; j++) {
+				Celda celdaAux = new Celda(new Coordenada(i, j));
+				if (celda[i][j] != null && !celda[i][j].estaVacia()) {
 					Pieza piezaAux = celda[i][j].consultarPieza();
 					celdaAux.establecerPieza(piezaAux);
 				}
@@ -55,135 +72,141 @@ public class Region{
 			}
 		}
 	}
+
 	/**
-	 * Obtiene el numero de filas
+	 * Consulta el número de filas de la región.
 	 * 
-	 * @return filas
+	 * @return número de filas
 	 */
 	public int consultarNumeroFilas() {
-		return filas;
+		return this.filas;
 	}
 
 	/**
-	 * Obtiene el numero de columnas
+	 * Consulta el número de columnas de la región.
 	 * 
-	 * @return columnas
+	 * @return número de columnas
 	 */
 	public int consultarNumeroColumnas() {
-		return columnas;
+		return this.columnas;
 	}
 
 	/**
-	 * Colocamos la pieza en las coordenadas dadas si es posible
+	 * Coloca la pieza indicada en la celda correspondiente a la coordenada dada,
+	 * siempre que la coordenada pertenezca a la región.
 	 * 
-	 * @param pieza
-	 * @param coordenada
+	 * @param pieza pieza a colocar
+	 * @param coordenada coordenada dentro de la región
 	 */
 	public void colocar(Pieza pieza, Coordenada coordenada) {
-		if(this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) { //esta funcion devuelve "true" si existe ya una pieza en ella
+		if (pieza != null && coordenada != null && this.estaEnRegion(coordenada)) {
 			this.celda[coordenada.fila()][coordenada.columna()].establecerPieza(pieza);
 		}
 	}
-	
+
 	/**
-	 * Mira si en la coordenada se encuentra una celda 
+	 * Consulta una copia en profundidad de la celda situada en la coordenada dada.
 	 * 
-	 * @param coordenada
-	 * @return
+	 * @param coordenada coordenada de la celda dentro de la región
+	 * @return clon de la celda consultada, o null si está fuera de la región
 	 */
 	public Celda consultarCelda(Coordenada coordenada) {
-		//Vamos a crear una celda aux para ver si que tiene la que se situa en esas coords
-		Celda celdaAux = new Celda(coordenada);
-		if(!this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) {
-			celdaAux.establecerPieza(this.celda[coordenada.fila()][coordenada.columna()].consultarPieza());
-		}
-		
-		return celdaAux;
-	}
-	
-	
-	/**
-	 * Calcula el giro y mira si hay piezas para cambiarlas de posicion
-	 * 
-	 * @return la region indicada girada ORARIAMENTE
-	 */
-	public Region rotarSentidoHorario() {
-		int F = consultarNumeroFilas();
-		int C = consultarNumeroColumnas();
-		Region regionGirada = new Region(C, F);
-		
-		for(int i = 0;i < F; i++) {
-			for(int j = 0;j < C; j++) {
-				if(!this.celda[i][j].estaVacia()) {
-					regionGirada.colocar(this.celda[i][j].consultarPieza(), new Coordenada(j,F-1-i));				}
+		Celda celdaAux = null;
+		if (coordenada != null && this.estaEnRegion(coordenada)) {
+			celdaAux = new Celda(coordenada);
+			if (!this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) {
+				celdaAux.establecerPieza(this.celda[coordenada.fila()][coordenada.columna()].consultarPieza());
 			}
 		}
-		return regionGirada;
+		return celdaAux;
 	}
-	
-	
+
 	/**
-	 * Calcula el giro y mira si hay piezas para cambiarlas de posicion
+	 * Genera una nueva región rotando 90 grados en sentido horario las piezas
+	 * contenidas en la región actual.
 	 * 
-	 * @return la region indicada girada ANTIHORARIAMENTE
+	 * @return nueva región con las piezas rotadas en sentido horario
 	 */
-	public Region rotarSentidoAntihorario() {
-		int F = consultarNumeroFilas();
-		int C = consultarNumeroColumnas();
-		Region regionGirada = new Region(C, F);
-		
-		for(int i = 0;i < F; i++) {
-			for(int j = 0;j < C; j++) {
-				if(!this.celda[i][j].estaVacia()) {
-					regionGirada.colocar(this.celda[i][j].consultarPieza(), new Coordenada(C-1-j,i));
+	public Region rotarSentidoHorario() {
+		int numFilas = this.consultarNumeroFilas();
+		int numColumnas = this.consultarNumeroColumnas();
+		Region regionGirada = new Region(numColumnas, numFilas);
+
+		for (int i = 0; i < numFilas; i++) {
+			for (int j = 0; j < numColumnas; j++) {
+				if (!this.celda[i][j].estaVacia()) {
+					regionGirada.colocar(this.celda[i][j].consultarPieza(), new Coordenada(j, numFilas - 1 - i));
 				}
 			}
 		}
 		return regionGirada;
 	}
-	
-	
+
 	/**
-	 * Determina si la coordenada se encuentra en la region
+	 * Genera una nueva región rotando 90 grados en sentido antihorario las piezas
+	 * contenidas en la región actual.
 	 * 
-	 * @param coordenada
-	 * @return true si esta, false si no
+	 * @return nueva región con las piezas rotadas en sentido antihorario
+	 */
+	public Region rotarSentidoAntihorario() {
+		int numFilas = this.consultarNumeroFilas();
+		int numColumnas = this.consultarNumeroColumnas();
+		Region regionGirada = new Region(numColumnas, numFilas);
+
+		for (int i = 0; i < numFilas; i++) {
+			for (int j = 0; j < numColumnas; j++) {
+				if (!this.celda[i][j].estaVacia()) {
+					regionGirada.colocar(this.celda[i][j].consultarPieza(), new Coordenada(numColumnas - 1 - j, i));
+				}
+			}
+		}
+		return regionGirada;
+	}
+
+	/**
+	 * Comprueba si la coordenada indicada pertenece a los límites de la región.
+	 * 
+	 * @param coordenada coordenada a comprobar
+	 * @return true si está dentro de la región, false en caso contrario
 	 */
 	public boolean estaEnRegion(Coordenada coordenada) {
-		if(coordenada.fila() >= 0 && coordenada.columna() >= 0)	
-			if((coordenada.fila() < this.consultarNumeroFilas()) && coordenada.columna() < this.consultarNumeroColumnas()) {
-				return true;
+		boolean enRegion = false;
+		if (coordenada != null && coordenada.fila() >= 0 && coordenada.columna() >= 0) {
+			if (coordenada.fila() < this.consultarNumeroFilas()
+					&& coordenada.columna() < this.consultarNumeroColumnas()) {
+				enRegion = true;
+			}
 		}
-		return false;
+		return enRegion;
 	}
-	
+
 	/**
-	 * Obtiene la region entera, y la transcribe a caracteres
+	 * Genera una representación textual de la región con caracteres 'X', 'O'
+	 * y '-' para celdas vacías.
 	 * 
-	 * @return Region en caracteres
+	 * @return cadena de texto con la representación de la región
 	 */
 	public String aTexto() {
-		
 		String texto = "";
-		int F = this.consultarNumeroFilas();
-		int C = this.consultarNumeroColumnas();
-		
-		for(int i = 0; i < F; i++) {
-			texto = texto + "\n";
-			for(int j = 0; j < C; j++) {
-				if(this.celda[i][j].estaVacia()) {
+		int numFilas = this.consultarNumeroFilas();
+		int numColumnas = this.consultarNumeroColumnas();
+
+		for (int i = 0; i < numFilas; i++) {
+			for (int j = 0; j < numColumnas; j++) {
+				if (this.celda[i][j].estaVacia()) {
 					texto = texto + "-";
-				}else {
+				} else {
 					char c = this.celda[i][j].consultarPieza().color().aCaracter();
 					texto = texto + c;
 				}
 			}
+			if (i < numFilas - 1) {
+				texto = texto + "\n";
+			}
 		}
-		texto = texto + "\n";
-		
 		return texto;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -208,6 +231,6 @@ public class Region{
 	@Override
 	public String toString() {
 		return "Region [filas=" + filas + ", columnas=" + columnas + ", celda=" + Arrays.toString(celda) + "]";
-	} 
+	}
 
 }
