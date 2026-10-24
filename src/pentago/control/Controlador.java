@@ -127,75 +127,49 @@ public class Controlador{
 		return this.tablero;
 	}
 	
+	
 	/**
-	 * 
-	 * @return jugador ganador, false si no hay ninguno
+	 * Comprueba si el color dado ya tiene una línea ganadora en el tablero.
+	 *
+	 * @param color color a comprobar
+	 * @return true si ese color alcanza el mínimo de piezas consecutivas en algún punto
+	 */
+	private boolean tienePiezasGanadoras(Color color) {
+	    boolean encontrado = false;
+
+	    for (int i = 0; i < tablero.consultarNumeroFilas(); i++) {
+	        for (int j = 0; j < tablero.consultarNumeroColumnas(); j++) {
+	            Coordenada coordenada = new Coordenada(i, j);
+	            Celda celda = tablero.consultarCelda(coordenada);
+
+	            if (!celda.estaVacia() && celda.consultarPieza().color() == color) {
+	                for (Direccion direccion : Direccion.values()) {
+	                    int consecutivas = tablero.contarPiezasConsecutivas(coordenada, direccion);
+	                    encontrado = encontrado || consecutivas >= configuracion.numeroPiezasConsecutivas();
+	                }
+	            }
+	        }
+	    }
+	    return encontrado;
+	}
+	
+	
+	/**
+	 * Obtiene el jugador que ha ganado la partida, si lo hay.
+	 *
+	 * @return jugador ganador, o null si no hay
 	 */
 	public Jugador obtenerGanador() {
-		
-		int n = 0;
-		boolean existeGanador = false;
-		
-		for(int i = 0; i < tablero.consultarNumeroFilas(); i++) {
-			for(int j = 0; j < tablero.consultarNumeroColumnas(); j++) {
-				if(!tablero.consultarCelda(new Coordenada(i,j)).estaVacia()) {	//Si no esta vacia, miramos ahora si tiene el color q queremos
-					if(tablero.consultarCelda(new Coordenada(i,j)).consultarPieza().color() == jugador[0].consultarColor()) {
-						int seguidas1 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_NO_SE);
-						if(seguidas1 == configuracion.numeroPiezasConsecutivas()) {
-							existeGanador = true;
-						}else {
-							int seguidas2 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_SO_NE);
-							if(seguidas2 == configuracion.numeroPiezasConsecutivas()) {
-								existeGanador = true;
-							}else {
-								int seguidas3 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.HORIZONTAL);
-								if(seguidas3 == configuracion.numeroPiezasConsecutivas()) {
-									existeGanador = true;
-								}else {
-									int seguidas4 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.VERTICAL);
-									if(seguidas4 == configuracion.numeroPiezasConsecutivas()) {
-										existeGanador = true;
-									}
-								}
-							}	
-						}							
-					}
-				}else {
-					/*Se puede poner lo siguiente, pero es "redundante" porque pasa al otro jugador por huevos
-					 * if(tablero.consultarCelda(new Coordenada(i,j)).consultarPieza().color() == jugador[1].consultarColor()) {
-					 */
-					int seguidas1 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_NO_SE);
-					if(seguidas1 == configuracion.numeroPiezasConsecutivas()) {
-						n++;
-						existeGanador = true;
-					}else {
-						int seguidas2 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.DIAGONAL_SO_NE);
-						if(seguidas2 == configuracion.numeroPiezasConsecutivas()) {
-							n++;
-							existeGanador = true;
-						}else {
-							int seguidas3 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.HORIZONTAL);
-							if(seguidas3 == configuracion.numeroPiezasConsecutivas()) {
-								n++;
-								existeGanador = true;
-							}else {
-								int seguidas4 = tablero.contarPiezasConsecutivas(new Coordenada(i,j), Direccion.VERTICAL);
-								if(seguidas4 == configuracion.numeroPiezasConsecutivas()) {
-									n++;
-									existeGanador = true;						
-								}
-							}
-						}
-					}					
-				}
-			}
-		}
-		
-		if(existeGanador) {
-			return jugador[n];
-		}else {
-			return null;
-		}
+	    boolean blancoGana = tienePiezasGanadoras(Color.BLANCO);
+	    boolean negroGana = tienePiezasGanadoras(Color.NEGRO);
+
+	    Jugador ganador = null;
+	    if (blancoGana && !negroGana) {
+	        ganador = jugador[0];
+	    } else if (negroGana && !blancoGana) {
+	        ganador = jugador[1];
+	    }
+	    return ganador;
 	}
 	
 	
@@ -220,13 +194,39 @@ public class Controlador{
 	}
 	
 	
-	
+	/**
+	 * Rota la region EN SENTIDO HORARIO acotada en el cuadrante dado
+	 * 
+	 * @param cuadrante
+	 */
 	public void rotarRegionSentidoHorario(Cuadrante cuadrante) {
-		tablero.
+		
 	Coordenada cordCuadrante = this.configuracion.consultarCoordenadaReferencia(cuadrante);
-	Region reg = new Region(new Celda(cordCuadrante));
+	int tam = configuracion.consultarTamañoCuadrante();
+	//Con esto ahora vamos a obtener una region, que al ser cuadrada, solo necesitamos el tamaño del cuadrante
+	Region reg = tablero.consultarRegion(cordCuadrante, tam, tam);
 	
+	Region regRotada = reg.rotarSentidoHorario();
+	//Y ahora volvemos a poner todas las piezas que tiene la region Rotada en el tablero, partiendo de la coord del cuadrante
+	tablero.restaurarPiezas(cordCuadrante, regRotada);
 	}
 	
+	
+	/**
+	 * Rota la region EN SENTIDO ANTI-HORARIO acotada en el cuadrante dado
+	 * 
+	 * @param cuadrante
+	 */
+	public void rotarRegionSentidoAntihorario(Cuadrante cuadrante) {
+		
+	Coordenada cordCuadrante = this.configuracion.consultarCoordenadaReferencia(cuadrante);
+	int tam = configuracion.consultarTamañoCuadrante();
+	//Con esto ahora vamos a obtener una region, que al ser cuadrada, solo necesitamos el tamaño del cuadrante
+	Region reg = tablero.consultarRegion(cordCuadrante, tam, tam);
+	
+	Region regRotada = reg.rotarSentidoAntihorario();
+	//Y ahora volvemos a poner todas las piezas que tiene la region Rotada en el tablero, partiendo de la coord del cuadrante
+	tablero.restaurarPiezas(cordCuadrante, regRotada);
+	}
 	
 }
