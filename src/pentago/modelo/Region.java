@@ -39,12 +39,14 @@ public class Region{
 	public Region(Celda[][] celda) {
 		//Creamos una region que sea una COPIA de la celda pasada
 		//Una vez creada, ahora le vamos a hacer una copia de todo lo q tiene a lo que hay
-		this.celda = new Celda[celda.length][celda[0].length];
+	    this.filas = celda.length;
+	    this.columnas = celda[0].length;
+	    this.celda = new Celda[this.filas][this.columnas];
 		
 		for(int i = 0; i < celda.length; i++) {
 			for(int j = 0; j < celda[0].length; j++) {
 				Celda celdaAux = new Celda(new Coordenada(i,j));
-				if(celda[i][j].estaVacia()) {
+				if(!celda[i][j].estaVacia()) {
 					//la que tiene la pieza es celda[i][j], Tenemos que sacarla, guardarla en una variable pieza y luego meterla en la aux?
 					Pieza piezaAux = celda[i][j].consultarPieza();
 					celdaAux.establecerPieza(piezaAux);
@@ -78,7 +80,7 @@ public class Region{
 	 * @param coordenada
 	 */
 	public void colocar(Pieza pieza, Coordenada coordenada) {
-		if(!this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) { //esta funcion devuelve "true" si existe ya una pieza en ella
+		if(this.celda[coordenada.fila()][coordenada.columna()].estaVacia()) { //esta funcion devuelve "true" si existe ya una pieza en ella
 			this.celda[coordenada.fila()][coordenada.columna()].establecerPieza(pieza);
 		}
 	}
@@ -103,16 +105,16 @@ public class Region{
 	/**
 	 * Calcula el giro y mira si hay piezas para cambiarlas de posicion
 	 * 
-	 * @return la region indicada girada ANTIHORARIAMENTE
+	 * @return la region indicada girada ORARIAMENTE
 	 */
-	public Region rotarSentidoAntihorario() {
+	public Region rotarSentidoHorario() {
 		int F = consultarNumeroFilas();
 		int C = consultarNumeroColumnas();
 		Region regionGirada = new Region(C, F);
 		
 		for(int i = 0;i < F; i++) {
 			for(int j = 0;j < C; j++) {
-				if(this.celda[i][j].estaVacia()) {
+				if(!this.celda[i][j].estaVacia()) {
 					regionGirada.colocar(this.celda[i][j].consultarPieza(), new Coordenada(j,F-1-i));				}
 			}
 		}
@@ -123,9 +125,9 @@ public class Region{
 	/**
 	 * Calcula el giro y mira si hay piezas para cambiarlas de posicion
 	 * 
-	 * @return la region indicada girada HORARIAMENTE
+	 * @return la region indicada girada ANTIHORARIAMENTE
 	 */
-	public Region rotarSentidoHorario() {
+	public Region rotarSentidoAntihorario() {
 		int F = consultarNumeroFilas();
 		int C = consultarNumeroColumnas();
 		Region regionGirada = new Region(C, F);
